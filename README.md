@@ -1,8 +1,12 @@
-# <img src="logo.svg" alt="Angle Borrowing Module" height="40px"> Angle Project Boilerplate
+# <img src="logo.svg" alt="Angle Bridge Framework" height="40px"> Angle Project Boilerplate
 
-[![CI](https://github.com/AngleProtocol/boilerplate/workflows/CI/badge.svg)](https://github.com/AngleProtocol/boilerplate/actions?query=workflow%3ACI)
+[![CI](https://github.com/AngleProtocol/bridge-framework/workflows/CI/badge.svg)](https://github.com/AngleProtocol/bridge-framework/actions?query=workflow%3ACI)
 
-This repository proposes a template that mixes hardhat and foundry frameworks. It also provides templates for EVM compatible smart contracts (in `./contracts/examples`), tests and deployment scripts.
+This repository proposes a framework to bring a token that exists natively on a chain across different chains.
+
+It assumes that on each chain there is what is called a `CoreBorrow` contract that handles the whole access control logic.
+
+It contains the deployment scripts from the `ANGLE` token.
 
 ## Starting
 
@@ -30,11 +34,11 @@ Warning: always keep your confidential information safe.
 
 ## Headers
 
-To automatically create headers, follow: https://github.com/Picodes/headers
+To automatically create headers, follow: <https://github.com/Picodes/headers>
 
 ## Hardhat Command line completion
 
-Follow these instructions to have hardhat command line arguments completion: https://hardhat.org/hardhat-runner/docs/guides/command-line-completion
+Follow these instructions to have hardhat command line arguments completion: <https://hardhat.org/hardhat-runner/docs/guides/command-line-completion>
 
 ## Foundry Installation
 
