@@ -1,4 +1,4 @@
-# <img src="logo.svg" alt="Angle Bridge Framework" height="40px"> Angle Project Boilerplate
+# <img src="logo.svg" alt="Angle Bridge Framework" height="40px"> Angle Bridge Framework
 
 [![CI](https://github.com/AngleProtocol/bridge-framework/workflows/CI/badge.svg)](https://github.com/AngleProtocol/bridge-framework/actions?query=workflow%3ACI)
 
@@ -8,7 +8,7 @@ It is the solution that is used by [Angle Protocol](https://angle.money) to brin
 
 For more details, take a look at [Angle Docs](https://docs.angle.money/other-aspects/cross-chain).
 
-## Setup
+## 💻 Setup
 
 ### Prerequisites
 
@@ -52,7 +52,7 @@ You can also check the coverage of the tests with:
 yarn hardhat:coverage
 ```
 
-## Deploying
+## ⚙️ Deploying
 
 ### Deployment flow
 
@@ -92,10 +92,10 @@ For instance, if your token exists natively on Ethereum, and has been bridged to
 
 The script at `deploy/LayerZeroSetSources.ts` can help you build the transactions for a given chain provided that you specify the right `LayerZeroBridgeTokenERC20` or `LayerZeroBridgeERC20` on the other chains.
 
-## Adding a new chain
+## 🌉 Adding a new chain
 
 To add support for a new chain you just have to deploy on this chain the `TokenSideChainMultiBridge` and the `LayerZeroBridgeTokenERC20`, and then to correctly set trusted remotes across all chains for this new chain.
 
-## Media
+## 📰 Media
 
 Don't hesitate to reach out on [Twitter 🐦](https://twitter.com/AngleProtocol) or on [Discord](https://discord.gg/4FtNgnpPgE) should you have any questions.
