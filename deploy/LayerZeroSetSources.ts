@@ -8,11 +8,11 @@ const func: DeployFunction = async ({ ethers, network }) => {
   const { deployer } = await ethers.getNamedSigners();
 
   const OFTs: { [string: string]: string } = {
-    optimism: '0x840b25c87B626a259CA5AC32124fA752F0230a72',
-    arbitrum: '0x16cd38b1B54E7abf307Cb2697E2D9321e843d5AA',
-    mainnet: '0x4Fa745FCCC04555F2AFA8874cd23961636CdF982',
-    avalanche: '0x14C00080F97B9069ae3B4Eb506ee8a633f8F5434',
-    bsc: '0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD',
+    optimism: '0x9201cC18965792808549566e6B06B016d915313A',
+    arbitrum: '0x366CEE609A64037a4910868c5b3cd62b9D019695',
+    mainnet: 'TODO',
+    avalanche: '0xC011882d0f7672D8942e7fE2248C174eeD640c8f',
+    bsc: '0x16cd38b1B54E7abf307Cb2697E2D9321e843d5AA',
   };
 
   const local = OFTs[network.name];

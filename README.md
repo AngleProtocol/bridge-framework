@@ -20,7 +20,7 @@ On top of that, contracts in this setup are upgradeable using a Transparent Prox
 
 ### Install packages
 
-Before running any script on this repo, you need to install packages, you need to run:
+Before running any script on this repo, you need to install packages by running:
 
 ```bash
 yarn
