@@ -16,7 +16,7 @@ This repo assumes that on each chain there is what is called a `CoreBorrow` cont
 
 You also obviously need a token natively deployed on a chain. It can work with any token. In this case, the [`ANGLE`](https://etherscan.io/address/0x31429d1856aD1377A8A0079410B297e1a9e214c2) token is used by default.
 
-On top of that, contracts in this setup are upgradeable, so you need to have a `ProxyAdmin` contract deployed across the different chains you are dealing with.
+On top of that, contracts in this setup are upgradeable using a Transparent Proxy pattern, so you need to have a `ProxyAdmin` contract deployed across the different chains you are dealing with.
 
 ### Install packages
 
@@ -98,4 +98,4 @@ To add support for a new chain you just have to deploy on this chain the `TokenS
 
 ## 📰 Media
 
-Don't hesitate to reach out on [Twitter 🐦](https://twitter.com/AngleProtocol) or on [Discord](https://discord.gg/4FtNgnpPgE) should you have any questions.
+Don't hesitate to reach out on [Twitter 🐦](https://twitter.com/AngleProtocol) or on [Discord](https://discord.gg/4FtNgnpPgE) should you have any question.
