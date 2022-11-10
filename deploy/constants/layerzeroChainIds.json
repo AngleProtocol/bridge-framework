@@ -1,0 +1,22 @@
+{
+  "ethereum": 101,
+  "mainnet": 101,
+  "localhost": 101,
+  "hardhat": 101,
+  "bsc": 102,
+  "avalanche": 106,
+  "polygon": 109,
+  "arbitrum": 110,
+  "optimism": 111,
+  "fantom": 112,
+  "harmony": 116,
+  "moonbeam": 126,
+
+  "rinkeby": 10001,
+  "bsc-testnet": 10002,
+  "fuji": 10006,
+  "mumbai": 10009,
+  "arbitrum-rinkeby": 10010,
+  "optimism-kovan": 10011,
+  "fantom-testnet": 10012
+}
