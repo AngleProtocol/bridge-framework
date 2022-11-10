@@ -15,6 +15,8 @@ const func: DeployFunction = async ({ ethers, network }) => {
   const proxyAdmin = CONTRACTS_ADDRESSES[ChainId.MAINNET].ProxyAdmin!;
   const coreBorrow = CONTRACTS_ADDRESSES[ChainId.MAINNET].CoreBorrow!;
 
+  console.log(proxyAdmin, coreBorrow, angle);
+
   const endpointAddr = (LZ_ENDPOINTS as { [name: string]: string })[network.name];
   console.log(`[${network.name}] LayerZero Endpoint address: ${endpointAddr}`);
   const layerZeroBridgeImplem = await deployImplem('LayerZeroBridgeERC20');

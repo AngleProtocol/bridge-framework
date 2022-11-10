@@ -10,7 +10,7 @@ const func: DeployFunction = async ({ ethers, network }) => {
   const OFTs: { [string: string]: string } = {
     optimism: '0x9201cC18965792808549566e6B06B016d915313A',
     arbitrum: '0x366CEE609A64037a4910868c5b3cd62b9D019695',
-    mainnet: 'TODO',
+    mainnet: '0x1056178977457A5F4BE33929520455A7d2E28670',
     avalanche: '0xC011882d0f7672D8942e7fE2248C174eeD640c8f',
     bsc: '0x16cd38b1B54E7abf307Cb2697E2D9321e843d5AA',
   };
