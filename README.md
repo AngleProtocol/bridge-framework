@@ -2,25 +2,33 @@
 
 [![CI](https://github.com/AngleProtocol/bridge-framework/workflows/CI/badge.svg)](https://github.com/AngleProtocol/bridge-framework/actions?query=workflow%3ACI)
 
-This repository introduces a framework to bring a token that exists natively on a chain across different chains using whitelisted bridge solutions. Framework proposed here relies on LayerZero message passing solution but any bridge solution can be used.
+This repository introduces a modular framework to bring a token that exists natively on a chain across different chains using whitelisted bridge solutions.
 
-It is the solution that is used by [Angle Protocol](https://angle.money) to bring agEUR and the ANGLE token cross-chain while keeping a single standard for each token, high security requirements and a smooth experience for bridgers which do not have to deal with several transactions.
+The system proposed here with [LayerZero](https://layerzero.network) as a bridge solution is currently used by [Angle Protocol](https://angle.money) to bring agEUR and the ANGLE token cross-chain while preserving:
+
+- a single standard for each token on each chain
+- high security requirements
+- a smooth experience for bridgers which do not have to deal with several transactions
 
 For more details, take a look at [Angle Docs](https://docs.angle.money/other-aspects/cross-chain).
 
 ## 💻 Setup
 
+This repo is designed to help you get a full cross-chain infrastructure for a token that already exists natively on a chain. Before getting started, make sure to follow the following setup steps.
+
 ### Prerequisites
 
-This repo assumes that on each chain there is what is called a `CoreBorrow` contract that handles the whole access control logic. So before anything, you may want to check that you have a contract that complies with the `ICoreBorrow` interface.
+This repo assumes that on each chain there is what is called a `CoreBorrow` contract that will handle the different access control levels of your future contracts. So before anything, you may want to check that you have a contract that complies with the `ICoreBorrow` interface on each of the desired chain.
 
-You also obviously need a token natively deployed on a chain. It can work with any token. In this case, the [`ANGLE`](https://etherscan.io/address/0x31429d1856aD1377A8A0079410B297e1a9e214c2) token is used by default.
+You can use [this contract](https://polygonscan.com/address/0x78754109cb73772d70A6560297037657C2AF51b8) as an implementation example.
 
-On top of that, contracts in this setup are upgradeable using a Transparent Proxy pattern, so you need to have a `ProxyAdmin` contract deployed across the different chains you are dealing with.
+You also obviously need a token natively deployed on a chain. It can work with any token.
+
+On top of that, contracts in this setup are upgradeable and use a Transparent Proxy pattern, so you need to have a `ProxyAdmin` contract deployed across the different chains you are dealing with.
 
 ### Install packages
 
-Before running any script on this repo, you need to install packages by running:
+To run scripts on this repo, you need to install packages by running:
 
 ```bash
 yarn
@@ -40,7 +48,7 @@ Warning: always keep your confidential information safe.
 
 ### Tests
 
-Contracts in this repo rely on Hardhat tests. You can run tests as follows:
+Contracts in this repo are tested with Hardhat. You can run tests as follows:
 
 ```bash
 yarn hardhat:test ./test/hardhat/bridgeERC20/tokenSideChainMultiBridge.test.ts
@@ -54,6 +62,8 @@ yarn hardhat:coverage
 
 ## ⚙️ Deploying
 
+Deployment examples used in this repo are based around the [`ANGLE`](https://etherscan.io/address/0x31429d1856aD1377A8A0079410B297e1a9e214c2) token and `LayerZero` as a bridge solution. The system introduced here is modular so you can obviously adapt to a new token or to different bridge solutions.
+
 ### Deployment flow
 
 To build a cross-chain infrastructure for your token, you need to deploy various contracts:
@@ -64,7 +74,7 @@ To build a cross-chain infrastructure for your token, you need to deploy various
 
 ### LayerZeroBridgeERC20
 
-To deploy the `LayerZeroBridgeERC20` contract on `CHAIN` (like mainnet), just run:
+To deploy the `LayerZeroBridgeERC20` contract on `CHAIN` (like mainnet or `polygon`), just run:
 
 ```bash
 yarn deploy CHAIN --tags LayerZeroBridgeERC20
@@ -99,3 +109,5 @@ To add support for a new chain you just have to deploy on this chain the `TokenS
 ## 📰 Media
 
 Don't hesitate to reach out on [Twitter 🐦](https://twitter.com/AngleProtocol) or on [Discord](https://discord.gg/4FtNgnpPgE) should you have any question.
+
+If you want to see how this setup looks like in production, check out [Angle Bridge interface](https://app.angle.money/#/bridges).
