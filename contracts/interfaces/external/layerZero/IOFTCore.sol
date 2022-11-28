@@ -1,14 +1,14 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.12;
+pragma solidity >=0.5.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-/**
- * @dev Interface of the IOFT core standard
- * @dev Forked from https://github.com/LayerZero-Labs/solidity-examples/blob/main/contracts/token/oft/IOFTCore.sol
- */
+/// @title IOFTCore
+/// @author LayerZero Labs (https://github.com/LayerZero-Labs/solidity-examples/blob/main/contracts/token/oft/IOFTCore.sol) with
+/// add-ons by Angle Labs, Inc.
+/// @notice Interface of the IOFT core standard
 interface IOFTCore is IERC165 {
     /// @notice Estimates send token `_tokenId` to (`_dstChainId`, `_toAddress`)
     /// @param _dstChainId L0 defined chain id to send tokens too
@@ -32,6 +32,24 @@ interface IOFTCore is IERC165 {
     /// @param _zroPaymentAddress set to address(0x0) if not paying in ZRO (LayerZero Token)
     /// @param _adapterParams is a flexible bytes array to indicate messaging adapter services
     function send(
+        uint16 _dstChainId,
+        bytes calldata _toAddress,
+        uint256 _amount,
+        address payable _refundAddress,
+        address _zroPaymentAddress,
+        bytes calldata _adapterParams
+    ) external payable;
+
+    /// @notice Sends `_amount` amount of token to (`_dstChainId`, `_toAddress`) from `_from`
+    /// @param _from the owner of token
+    /// @param _dstChainId the destination chain identifier
+    /// @param _toAddress can be any size depending on the `dstChainId`.
+    /// @param _amount the quantity of tokens in wei
+    /// @param _refundAddress the address LayerZero refunds if too much message fee is sent
+    /// @param _zroPaymentAddress set to address(0x0) if not paying in ZRO (LayerZero Token)
+    /// @param _adapterParams is a flexible bytes array to indicate messaging adapter services
+    function sendFrom(
+        address _from,
         uint16 _dstChainId,
         bytes calldata _toAddress,
         uint256 _amount,
@@ -85,24 +103,10 @@ interface IOFTCore is IERC165 {
     function withdraw(uint256 amount, address recipient) external returns (uint256);
 
     /// @dev Emitted when `_amount` tokens are moved from the `_sender` to (`_dstChainId`, `_toAddress`)
-    /// `_nonce` is the outbound nonce
-    event SendToChain(
-        address indexed _sender,
-        uint16 indexed _dstChainId,
-        bytes indexed _toAddress,
-        uint256 _amount,
-        uint64 _nonce
-    );
+    event SendToChain(uint16 indexed _dstChainId, address indexed _from, bytes indexed _toAddress, uint256 _amount);
 
-    /// @dev Emitted when `_amount` tokens are received from `_srcChainId` into the `_toAddress` on the local chain.
-    /// `_nonce` is the inbound nonce.
-    event ReceiveFromChain(
-        uint16 indexed _srcChainId,
-        bytes indexed _srcAddress,
-        address indexed _toAddress,
-        uint256 _amount,
-        uint64 _nonce
-    );
+    /// @dev Emitted when `_amount` tokens are received from `_srcChainId` into the `_to` address on the local chain.
+    event ReceiveFromChain(uint16 indexed _srcChainId, address indexed _to, uint256 _amount);
 }
 
 /// @dev Interface of the OFT standard

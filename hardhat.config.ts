@@ -1,14 +1,10 @@
-/// ENVVAR
-// - ENABLE_GAS_REPORT
-// - CI
-// - RUNS
 import 'dotenv/config';
 import 'hardhat-contract-sizer';
 import 'hardhat-spdx-license-identifier';
 import 'hardhat-deploy';
 import 'hardhat-abi-exporter';
-import '@nomicfoundation/hardhat-chai-matchers'; /** NEW FEATURE - https://hardhat.org/hardhat-chai-matchers/docs/reference#.revertedwithcustomerror */
-import '@nomicfoundation/hardhat-toolbox'; /** NEW FEATURE */
+import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomicfoundation/hardhat-toolbox';
 import '@openzeppelin/hardhat-upgrades';
 import '@nomiclabs/hardhat-truffle5';
 import '@nomiclabs/hardhat-solhint';
@@ -65,24 +61,8 @@ const config: HardhatUserConfig = {
       hardfork: 'london',
       forking: {
         enabled: argv.fork || false,
-        // Mainnet
         url: nodeUrl('fork'),
         blockNumber: 15868074,
-        // Polygon
-        /*
-        url: nodeUrl('forkpolygon'),
-        blockNumber: 31505333,
-        */
-        // Optimism
-        /*
-        url: nodeUrl('optimism'),
-        blockNumber: 17614765,
-        */
-        // Arbitrum
-        /*
-        url: nodeUrl('arbitrum'),
-        blockNumber: 19356874,
-        */
       },
       mining: argv.disableAutoMining
         ? {
@@ -229,7 +209,7 @@ const config: HardhatUserConfig = {
   },
   spdxLicenseIdentifier: {
     overwrite: true,
-    runOnCompile: true,
+    runOnCompile: false,
   },
   abiExporter: {
     path: './export/abi',

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity 0.8.12;
+pragma solidity ^0.8.12;
 
 import "./NonblockingLzAppERC20.sol";
 import "../../../interfaces/external/layerZero/IOFTCore.sol";
@@ -11,6 +11,14 @@ import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeabl
 /// but with slight modifications to add return values to the `_creditTo` and `_debitFrom` functions
 /// @notice Base contract for bridging using LayerZero
 abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFTCore {
+    /// @notice Amount of additional gas specified
+    uint256 public constant NO_EXTRA_GAS = 0;
+    /// @notice Packet type for token transfer
+    uint16 public constant PT_SEND = 0;
+
+    /// @notice Whether custom adapter parameters should be used or not
+    bool public useCustomAdapterParams;
+
     // ===================== EXTERNAL PERMISSIONLESS FUNCTIONS =====================
 
     /// @inheritdoc IOFTCore
@@ -28,6 +36,21 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
     ) public payable virtual;
 
     /// @inheritdoc IOFTCore
+    function sendFrom(
+        address _from,
+        uint16 _dstChainId,
+        bytes memory _toAddress,
+        uint256 _amount,
+        address payable _refundAddress,
+        address _zroPaymentAddress,
+        bytes memory _adapterParams
+    ) public payable virtual {
+        _checkAdapterParams(_dstChainId, PT_SEND, _adapterParams, NO_EXTRA_GAS);
+        _amount = _debitFrom(_dstChainId, _toAddress, _amount);
+        _send(_from, _dstChainId, _toAddress, _amount, _refundAddress, _zroPaymentAddress, _adapterParams);
+    }
+
+    /// @inheritdoc IOFTCore
     function send(
         uint16 _dstChainId,
         bytes memory _toAddress,
@@ -36,13 +59,7 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
         address _zroPaymentAddress,
         bytes memory _adapterParams
     ) public payable virtual {
-        _amount = _debitFrom(_dstChainId, _toAddress, _amount);
-
-        bytes memory payload = abi.encode(_toAddress, _amount);
-        _lzSend(_dstChainId, payload, _refundAddress, _zroPaymentAddress, _adapterParams);
-
-        uint64 nonce = lzEndpoint.getOutboundNonce(_dstChainId, address(this));
-        emit SendToChain(msg.sender, _dstChainId, _toAddress, _amount, nonce);
+        sendFrom(msg.sender, _dstChainId, _toAddress, _amount, _refundAddress, _zroPaymentAddress, _adapterParams);
     }
 
     /// @inheritdoc IOFTCore
@@ -54,13 +71,20 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
         address _zroPaymentAddress,
         bytes memory _adapterParams
     ) public payable virtual {
+        _checkAdapterParams(_dstChainId, PT_SEND, _adapterParams, NO_EXTRA_GAS);
         _amount = _debitCreditFrom(_dstChainId, _toAddress, _amount);
-
-        _send(_dstChainId, _toAddress, _amount, _refundAddress, _zroPaymentAddress, _adapterParams);
+        _send(msg.sender, _dstChainId, _toAddress, _amount, _refundAddress, _zroPaymentAddress, _adapterParams);
     }
 
     /// @inheritdoc IOFTCore
     function withdraw(uint256 amount, address recipient) external virtual returns (uint256);
+
+    // ============================ GOVERNANCE FUNCTION ============================
+
+    /// @notice Toggles the value of the `useCustomAdapterParams`
+    function toggleUseCustomAdapterParams() public virtual onlyGovernorOrGuardian {
+        useCustomAdapterParams = !useCustomAdapterParams;
+    }
 
     // ============================= INTERNAL FUNCTIONS ============================
 
@@ -73,6 +97,7 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
     /// @param _adapterParams is a flexible bytes array to indicate messaging adapter services
     /// @dev Accounting and checks should be performed beforehand
     function _send(
+        address _from,
         uint16 _dstChainId,
         bytes memory _toAddress,
         uint256 _amount,
@@ -80,30 +105,45 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
         address _zroPaymentAddress,
         bytes memory _adapterParams
     ) internal {
-        bytes memory payload = abi.encode(_toAddress, _amount);
-        _lzSend(_dstChainId, payload, _refundAddress, _zroPaymentAddress, _adapterParams);
-
-        uint64 nonce = lzEndpoint.getOutboundNonce(_dstChainId, address(this));
-        emit SendToChain(msg.sender, _dstChainId, _toAddress, _amount, nonce);
+        bytes memory payload = abi.encode(PT_SEND, _toAddress, _amount);
+        _lzSend(_dstChainId, payload, _refundAddress, _zroPaymentAddress, _adapterParams, msg.value);
+        emit SendToChain(_dstChainId, _from, _toAddress, _amount);
     }
 
     /// @inheritdoc NonblockingLzAppERC20
     function _nonblockingLzReceive(
         uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint64 _nonce,
+        bytes memory,
+        uint64,
         bytes memory _payload
     ) internal virtual override {
-        // decode and load the toAddress
-        (bytes memory toAddressBytes, uint256 amount) = abi.decode(_payload, (bytes, uint256));
-        address toAddress;
+        uint16 packetType;
         //solhint-disable-next-line
         assembly {
-            toAddress := mload(add(toAddressBytes, 20))
+            packetType := mload(add(_payload, 32))
         }
-        amount = _creditTo(_srcChainId, toAddress, amount);
+        if (packetType != PT_SEND) revert InvalidParams();
+        // decode and load the toAddress
+        (, bytes memory toAddressBytes, uint256 amount) = abi.decode(_payload, (uint16, bytes, uint256));
+        address to;
+        //solhint-disable-next-line
+        assembly {
+            to := mload(add(toAddressBytes, 20))
+        }
+        amount = _creditTo(_srcChainId, to, amount);
 
-        emit ReceiveFromChain(_srcChainId, _srcAddress, toAddress, amount, _nonce);
+        emit ReceiveFromChain(_srcChainId, to, amount);
+    }
+
+    /// @notice Checks the adapter parameters given during the smart contract call
+    function _checkAdapterParams(
+        uint16 _dstChainId,
+        uint16 _pkType,
+        bytes memory _adapterParams,
+        uint256 _extraGas
+    ) internal virtual {
+        if (useCustomAdapterParams) _checkGasLimit(_dstChainId, _pkType, _adapterParams, _extraGas);
+        else if (_adapterParams.length != 0) revert InvalidParams();
     }
 
     /// @notice Makes accountability when bridging from this contract using canonical token
@@ -162,5 +202,5 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
         return lzEndpoint.estimateFees(_dstChainId, address(this), payload, _useZro, _adapterParams);
     }
 
-    uint256[50] private __gap;
+    uint256[49] private __gap;
 }
