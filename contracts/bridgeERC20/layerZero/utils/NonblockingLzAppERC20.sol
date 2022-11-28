@@ -86,8 +86,8 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];
         // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.
         if (
-            _srcAddress.length != trustedRemote.length ||
             trustedRemote.length == 0 ||
+            _srcAddress.length != trustedRemote.length ||
             keccak256(_srcAddress) != keccak256(trustedRemote)
         ) revert InvalidSource();
 
@@ -205,6 +205,7 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         if (minGasLimit == 0 || minGasLimit > _getGasLimit(_adapterParams)) revert InsufficientGas();
     }
 
+    /// @notice Gets the gas limit from the `_adapterParams` parameter
     function _getGasLimit(bytes memory _adapterParams) internal pure virtual returns (uint256 gasLimit) {
         if (_adapterParams.length < 34) revert InvalidParams();
         // solhint-disable-next-line
@@ -246,6 +247,7 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         lzEndpoint.setConfig(_version, _chainId, _configType, _config);
     }
 
+    /// @notice Sets the minimum gas parameter for a packet type on a given chain
     function setMinDstGas(
         uint16 _dstChainId,
         uint16 _packetType,

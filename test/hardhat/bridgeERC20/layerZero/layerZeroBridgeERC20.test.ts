@@ -217,7 +217,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('reverts - trusted remote not set', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -231,7 +234,10 @@ describe('LayerZeroBridgeERC20', () => {
       expect(await lzEndpoint.getOutboundNonce(1, lzBridge.address)).to.be.equal(10);
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -246,7 +252,10 @@ describe('LayerZeroBridgeERC20', () => {
       expect(await lzEndpoint.getOutboundNonce(1, lzBridge.address)).to.be.equal(10);
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -349,20 +358,29 @@ describe('LayerZeroBridgeERC20', () => {
     });
     it('success - no amount in the contract 1/2', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('1')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('1')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('1'));
     });
     it('success - no amount in the contract 2/2', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('3'));
     });
     it('success - a portion of stablecoins in the contract', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -371,7 +389,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - enough stablecoins in the contract', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('3'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('0'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('3'));
@@ -381,7 +402,10 @@ describe('LayerZeroBridgeERC20', () => {
       await lzBridge.connect(impersonatedSigners[governor]).pauseSendTokens(true);
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('3'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       await lzBridge.connect(impersonatedSigners[governor]).pauseSendTokens(false);
       expect(await lzBridge.failedMessages(1, remote.address, 0)).to.be.equal(web3.utils.keccak256(payloadData));
@@ -414,7 +438,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - possible to withdraw part of the balance', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -426,7 +453,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - possible to withdraw all in a row', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -439,7 +469,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - withdraw to another address', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -452,7 +485,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - withdraw to another address and balance leftover', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -477,7 +513,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - withdraw for another address', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -491,7 +530,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - withdraw all for another address', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -510,7 +552,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - partial amount swept', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));
@@ -520,7 +565,10 @@ describe('LayerZeroBridgeERC20', () => {
     it('success - full amount amount swept', async () => {
       await lzBridge.connect(impersonatedSigners[governor]).setTrustedRemote(1, remote.address);
       await agToken.mint(lzBridge.address, parseEther('1'));
-      const payloadData = ethers.utils.defaultAbiCoder.encode(['bytes', 'uint256'], [alice.address, parseEther('3')]);
+      const payloadData = ethers.utils.defaultAbiCoder.encode(
+        ['uint16', 'bytes', 'uint256'],
+        [0, alice.address, parseEther('3')],
+      );
       await lzEndpoint.lzReceive(lzBridge.address, 1, remote.address, 0, payloadData);
       expect(await lzBridge.balanceOf(alice.address)).to.be.equal(parseEther('2'));
       expect(await agToken.balanceOf(alice.address)).to.be.equal(parseEther('1'));

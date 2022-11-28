@@ -117,14 +117,12 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
         uint64,
         bytes memory _payload
     ) internal virtual override {
-        uint16 packetType;
-        //solhint-disable-next-line
-        assembly {
-            packetType := mload(add(_payload, 32))
-        }
-        if (packetType != PT_SEND) revert InvalidParams();
         // decode and load the toAddress
-        (, bytes memory toAddressBytes, uint256 amount) = abi.decode(_payload, (uint16, bytes, uint256));
+        (uint16 packetType, bytes memory toAddressBytes, uint256 amount) = abi.decode(
+            _payload,
+            (uint16, bytes, uint256)
+        );
+        if (packetType != PT_SEND) revert InvalidParams();
         address to;
         //solhint-disable-next-line
         assembly {
@@ -198,7 +196,7 @@ abstract contract OFTCoreERC20 is NonblockingLzAppERC20, ERC165Upgradeable, IOFT
         bytes memory _adapterParams
     ) public view virtual override returns (uint256 nativeFee, uint256 zroFee) {
         // mock the payload for send()
-        bytes memory payload = abi.encode(_toAddress, _amount);
+        bytes memory payload = abi.encode(PT_SEND, _toAddress, _amount);
         return lzEndpoint.estimateFees(_dstChainId, address(this), payload, _useZro, _adapterParams);
     }
 

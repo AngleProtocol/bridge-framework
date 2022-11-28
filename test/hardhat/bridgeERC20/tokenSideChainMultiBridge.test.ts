@@ -464,6 +464,25 @@ describe('TokenSideChainMultiBridge', () => {
       expect(await bridgeToken.balanceOf(deployer.address)).to.be.equal(parseEther('1'));
       expect(await angle.currentUsage(bridgeToken.address)).to.be.equal(parseEther('1'));
     });
+    it('success - hourlyLimit smaller than hourly usage', async () => {
+      await angle.connect(deployer).setLimit(bridgeToken.address, parseEther('10'));
+      await angle.connect(deployer).setHourlyLimit(bridgeToken.address, parseEther('1'));
+      await angle.connect(deployer).setSwapFee(bridgeToken.address, parseEther('0'));
+      await bridgeToken.mint(deployer.address, parseEther('2'));
+      await bridgeToken.connect(deployer).approve(angle.address, parseEther('2'));
+      expect(await angle.balanceOf(bob.address)).to.be.equal(parseEther('0'));
+      await angle.connect(deployer).swapIn(bridgeToken.address, parseEther('1'), bob.address);
+      expect(await angle.balanceOf(bob.address)).to.be.equal(parseEther('1'));
+      expect(await bridgeToken.balanceOf(deployer.address)).to.be.equal(parseEther('1'));
+      expect(await angle.currentUsage(bridgeToken.address)).to.be.equal(parseEther('1'));
+      await angle.connect(deployer).setHourlyLimit(bridgeToken.address, parseEther('0.5'));
+      // current usage is 1 and hourly limit is 0.5
+      await angle.connect(deployer).swapIn(bridgeToken.address, parseEther('1'), bob.address);
+      // Amount should remain untouched
+      expect(await angle.balanceOf(bob.address)).to.be.equal(parseEther('1'));
+      expect(await bridgeToken.balanceOf(deployer.address)).to.be.equal(parseEther('1'));
+      expect(await angle.currentUsage(bridgeToken.address)).to.be.equal(parseEther('1'));
+    });
     it('success - total amount greater than hourlyLimit', async () => {
       await angle.connect(deployer).setLimit(bridgeToken.address, parseEther('10'));
       await angle.connect(deployer).setHourlyLimit(bridgeToken.address, parseEther('2'));
