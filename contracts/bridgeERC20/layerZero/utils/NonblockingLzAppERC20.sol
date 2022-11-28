@@ -7,11 +7,14 @@ import "../../../interfaces/external/layerZero/ILayerZeroReceiver.sol";
 import "../../../interfaces/external/layerZero/ILayerZeroUserApplicationConfig.sol";
 import "../../../interfaces/external/layerZero/ILayerZeroEndpoint.sol";
 import "../../../interfaces/ICoreBorrow.sol";
+import "../../../external/ExcessivelySafeCall.sol";
 
 /// @title NonblockingLzAppERC20
 /// @author Angle Labs, Inc., forked from https://github.com/LayerZero-Labs/solidity-examples/
 /// @notice Base contract for bridging an ERC20 token using LayerZero
 abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
+    using ExcessivelySafeCall for address;
+
     /// @notice Layer Zero endpoint
     ILayerZeroEndpoint public lzEndpoint;
 
@@ -27,7 +30,7 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
     // =================================== EVENTS ==================================
 
     event SetTrustedRemote(uint16 _srcChainId, bytes _srcAddress);
-    event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload);
+    event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes reason);
 
     // =================================== ERRORS ==================================
 
@@ -142,13 +145,14 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         uint64 _nonce,
         bytes memory _payload
     ) internal {
-        // try-catch all errors/exceptions
-        try this.nonblockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload) {
-            // do nothing
-        } catch {
-            // error / exception
+        (bool success, bytes memory reason) = address(this).excessivelySafeCall(
+            gasleft(),
+            150,
+            abi.encodeWithSelector(this.nonblockingLzReceive.selector, _srcChainId, _srcAddress, _nonce, _payload)
+        );
+        if (!success) {
             failedMessages[_srcChainId][_srcAddress][_nonce] = keccak256(_payload);
-            emit MessageFailed(_srcChainId, _srcAddress, _nonce, _payload);
+            emit MessageFailed(_srcChainId, _srcAddress, _nonce, _payload, reason);
         }
     }
 
