@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.12;
+pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../../interfaces/external/layerZero/ILayerZeroReceiver.sol";
@@ -24,8 +24,14 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
     /// @notice Maps chainIds to their OFT address
     mapping(uint16 => bytes) public trustedRemoteLookup;
 
+    /// @notice Maps pairs of (`to` chain, `packetType`) to the minimum amount of gas needed on the destination chain
+    mapping(uint16 => mapping(uint16 => uint256)) public minDstGasLookup;
+
     /// @notice Reference to the `CoreBorrow` contract to fetch access control
     address public coreBorrow;
+
+    /// @notice For future LayerZero compatibility
+    address public precrime;
 
     // =================================== EVENTS ==================================
 
@@ -36,10 +42,12 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
 
     error NotGovernor();
     error NotGovernorOrGuardian();
+    error InsufficientGas();
     error InvalidEndpoint();
     error InvalidSource();
     error InvalidCaller();
     error InvalidPayload();
+    error InvalidParams();
     error ZeroAddress();
 
     // ================================ CONSTRUCTOR ================================
@@ -77,8 +85,11 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
 
         bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];
         // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.
-        if (_srcAddress.length != trustedRemote.length || keccak256(_srcAddress) != keccak256(trustedRemote))
-            revert InvalidSource();
+        if (
+            trustedRemote.length == 0 ||
+            _srcAddress.length != trustedRemote.length ||
+            keccak256(_srcAddress) != keccak256(trustedRemote)
+        ) revert InvalidSource();
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
@@ -167,12 +178,13 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         bytes memory _payload,
         address payable _refundAddress,
         address _zroPaymentAddress,
-        bytes memory _adapterParams
+        bytes memory _adapterParams,
+        uint256 _nativeFee
     ) internal virtual {
         bytes memory trustedRemote = trustedRemoteLookup[_dstChainId];
         if (trustedRemote.length == 0) revert InvalidSource();
         //solhint-disable-next-line
-        lzEndpoint.send{ value: msg.value }(
+        lzEndpoint.send{ value: _nativeFee }(
             _dstChainId,
             trustedRemote,
             _payload,
@@ -180,6 +192,26 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
             _zroPaymentAddress,
             _adapterParams
         );
+    }
+
+    /// @notice Checks the gas limit of a given transaction
+    function _checkGasLimit(
+        uint16 _dstChainId,
+        uint16 _type,
+        bytes memory _adapterParams,
+        uint256 _extraGas
+    ) internal view virtual {
+        uint256 minGasLimit = minDstGasLookup[_dstChainId][_type] + _extraGas;
+        if (minGasLimit == 0 || minGasLimit > _getGasLimit(_adapterParams)) revert InsufficientGas();
+    }
+
+    /// @notice Gets the gas limit from the `_adapterParams` parameter
+    function _getGasLimit(bytes memory _adapterParams) internal pure virtual returns (uint256 gasLimit) {
+        if (_adapterParams.length < 34) revert InvalidParams();
+        // solhint-disable-next-line
+        assembly {
+            gasLimit := mload(add(_adapterParams, 34))
+        }
     }
 
     // ============================ GOVERNANCE FUNCTIONS ===========================
@@ -215,6 +247,21 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         lzEndpoint.setConfig(_version, _chainId, _configType, _config);
     }
 
+    /// @notice Sets the minimum gas parameter for a packet type on a given chain
+    function setMinDstGas(
+        uint16 _dstChainId,
+        uint16 _packetType,
+        uint256 _minGas
+    ) external onlyGovernorOrGuardian {
+        if (_minGas == 0) revert InvalidParams();
+        minDstGasLookup[_dstChainId][_packetType] = _minGas;
+    }
+
+    /// @notice Sets the precrime variable
+    function setPrecrime(address _precrime) external onlyGovernorOrGuardian {
+        precrime = _precrime;
+    }
+
     /// @notice Overrides the default LZ config
     function setSendVersion(uint16 _version) external override onlyGovernorOrGuardian {
         lzEndpoint.setSendVersion(_version);
@@ -242,5 +289,5 @@ abstract contract NonblockingLzAppERC20 is Initializable, ILayerZeroReceiver, IL
         return keccak256(trustedSource) == keccak256(_srcAddress);
     }
 
-    uint256[46] private __gap;
+    uint256[44] private __gap;
 }

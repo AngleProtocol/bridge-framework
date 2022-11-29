@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity 0.8.12;
+pragma solidity ^0.8.12;
 
 import "./utils/OFTCoreERC20.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -146,7 +146,7 @@ contract LayerZeroBridgeERC20 is OFTCoreERC20, PausableUpgradeable {
     /// @param amount Amount to withdraw from balance
     /// @param recipient Address to withdraw from
     function sweep(uint256 amount, address recipient) external onlyGovernorOrGuardian {
-        balanceOf[recipient] = balanceOf[recipient] - amount; // Will overflow if the amount is too big
+        balanceOf[recipient] -= amount;
     }
 
     uint256[47] private __gap;
